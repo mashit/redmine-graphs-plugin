@@ -93,7 +93,7 @@ class GraphsController < ApplicationController
             :show_data_points => false,
             :show_data_values => false,
             :stagger_x_labels => true,
-            :style_sheet => "/plugin_assets/redmine_graphs/stylesheets/issue_growth.css",
+            :style_sheet => "/redmine/plugin_assets/redmine_graphs/stylesheets/issue_growth.css",
             :width => 720,
             :x_label_format => "%Y-%m-%d"
         })
@@ -202,7 +202,7 @@ class GraphsController < ApplicationController
             :show_data_points => false,
             :show_data_values => false,
             :stagger_x_labels => true,
-            :style_sheet => "/plugin_assets/redmine_graphs/stylesheets/bug_growth.css",
+            :style_sheet => "/redmine/plugin_assets/redmine_graphs/stylesheets/bug_growth.css",
             :width => 720,
             :x_label_format => "%Y-%m-%d"
         })
