@@ -14,7 +14,10 @@ class GraphsController < ApplicationController
     before_filter :find_optional_project, :only => [:issue_growth_graph]
     before_filter :find_open_issues, :only => [:old_issues, :issue_age_graph]
     before_filter :find_bug_issues, :only => [:bug_growth, :bug_growth_graph]
-	
+
+    helper :queries
+    include QueriesHelper
+
     helper IssuesHelper
     
     ############################################################################
@@ -72,6 +75,7 @@ class GraphsController < ApplicationController
     end
     # Displays created vs update date on bugs over time    
     def bug_growth
+        retrieve_query
         @bug_by_created = @bugs.group_by {|issue| issue.created_on.to_date }.sort
     end
         
