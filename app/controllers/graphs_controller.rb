@@ -76,6 +76,9 @@ class GraphsController < ApplicationController
     # Displays created vs update date on bugs over time    
     def bug_growth
         retrieve_query
+        @filter = Hash.new
+        @filter['months'] = 6;
+        @filter['month_from'], @filter['year_from'] = Date.today.month        
         @bug_by_created = @bugs.group_by {|issue| issue.created_on.to_date }.sort
     end
         
@@ -337,12 +340,19 @@ class GraphsController < ApplicationController
 	
 	def find_bug_issues
         find_optional_project
+        v_filters = params["v"]
+        tracker_ids = ["1"]
+        assignee_id = User.current.id
+        unless v_filters.nil?
+          tracker_ids = v_filters['tracker_id'] unless v_filters['tracker_id'].nil?
+          assignee_id = v_filters['assigned_to_id'] unless v_filters['assigned_to_id'].nil? and v_filters['assigned_to_id'] != 'me'
+        end               
         if !@project.nil?
             ids = [@project.id]
             ids += @project.descendants.active.visible.collect(&:id)
-            @bugs= Issue.visible.find(:all, :include => [:status], :conditions => ["#{Issue.table_name}.tracker_id IN (?) AND #{Project.table_name}.id IN (?)", 1, ids])
+            @bugs= Issue.visible.find(:all, :include => [:status], :conditions => ["#{Issue.table_name}.tracker_id IN (?) AND #{Project.table_name}.id IN (?) AND assigned_to_id = (?)", tracker_ids, ids, assignee_id])
         else
-            @bugs= Issue.visible.find(:all, :include => [:status], :conditions => ["#{Issue.table_name}.tracker_id IN (?)", 1])
+            @bugs= Issue.visible.find(:all, :include => [:status], :conditions => ["#{Issue.table_name}.tracker_id IN (?) AND assigned_to_id = (?) ", tracker_ids,assignee_id])
         end
     rescue ActiveRecord::RecordNotFound
         render_404
