@@ -75,7 +75,6 @@ class GraphsController < ApplicationController
     end
     # Displays created vs update date on bugs over time    
     def bug_growth
-        retrieve_query
         @filter = Hash.new
         @filter['months'] = 6;
         @filter['month_from'], @filter['year_from'] = Date.today.month        
@@ -102,7 +101,7 @@ class GraphsController < ApplicationController
             :stagger_x_labels => true,
             :style_sheet => "/redmine/plugin_assets/redmine_graphs/stylesheets/issue_growth.css",
             :width => 720,
-            :x_label_format => "%Y-%m-%d"
+            :x_label_format => "%d %b %y"
         })
         
         # Get the top visible projects by issue count
@@ -162,7 +161,7 @@ class GraphsController < ApplicationController
             :stagger_x_labels => true,
             :style_sheet => "/redmine/plugin_assets/redmine_graphs/stylesheets/issue_age.css",
             :width => 720,
-            :x_label_format => "%b %d"
+            :x_label_format => "%d %b %y"
         })
 
         # Group issues
@@ -211,7 +210,7 @@ class GraphsController < ApplicationController
             :stagger_x_labels => true,
             :style_sheet => "/redmine/plugin_assets/redmine_graphs/stylesheets/bug_growth.css",
             :width => 720,
-            :x_label_format => "%Y-%m-%d"
+            :x_label_format => "%d %b %y"
         })
 
         # Group issues
@@ -340,20 +339,32 @@ class GraphsController < ApplicationController
 	
 	def find_bug_issues
         find_optional_project
-        v_filters = params["v"]
-        tracker_ids = ["1"]
-        assignee_id = User.current.id
-        unless v_filters.nil?
-          tracker_ids = v_filters['tracker_id'] unless v_filters['tracker_id'].nil?
-          assignee_id = v_filters['assigned_to_id'] unless v_filters['assigned_to_id'].nil? and v_filters['assigned_to_id'] != 'me'
-        end               
-        if !@project.nil?
-            ids = [@project.id]
-            ids += @project.descendants.active.visible.collect(&:id)
-            @bugs= Issue.visible.find(:all, :include => [:status], :conditions => ["#{Issue.table_name}.tracker_id IN (?) AND #{Project.table_name}.id IN (?) AND assigned_to_id = (?)", tracker_ids, ids, assignee_id])
-        else
-            @bugs= Issue.visible.find(:all, :include => [:status], :conditions => ["#{Issue.table_name}.tracker_id IN (?) AND assigned_to_id = (?) ", tracker_ids,assignee_id])
-        end
+        retrieve_query
+#        v_filters = params        
+#        unless params["f"].nil?
+#          params["f"].each do |field|
+#            Rails.logger.info '----------------------------'
+#            Rails.logger.info field
+#          end
+#        end
+#        tracker_ids = ["1"]
+#        assignee_id = User.current.id
+#        unless v_filters.nil?
+#          tracker_ids = v_filters['tracker_id'] unless v_filters['tracker_id'].nil?
+#          assignee_id = v_filters['assigned_to_id'] unless v_filters['assigned_to_id'].nil? and v_filters['assigned_to_id'] != 'me'
+#        end
+#        condition_values = []
+#        condition_string = [""]
+#        if !@project.nil?
+#            ids = [@project.id]
+#            ids += @project.descendants.active.visible.collect(&:id)
+#            condition_values.push(ids)
+#            condition_string[0] += "#{Project.table_name}.id IN (?)"
+#            @bugs= Issue.visible.find(:all, :include => [:status], :conditions => condition_string + condition_values)
+#        else
+#            @bugs= Issue.visible.find(:all)
+#        end
+        @bugs = @query.issues
     rescue ActiveRecord::RecordNotFound
         render_404
     end

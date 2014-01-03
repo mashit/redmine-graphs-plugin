@@ -1,5 +1,3 @@
-<h2><%= @query.new_record? ? l(:label_gantt) : h(@query.name) %></h2>
-
 <%= form_tag({:controller => 'graphs', :action => 'bug_growth',
              :project_id => @project, :month => params[:month],
              :year => params[:year], :months => params[:months]},
@@ -28,8 +26,10 @@
 
 <h2><%= l(:label_graphs_bug_growth) %></h2>
 <% unless @bugs.empty? %>
-    <%= tag("embed", :width => "100%", :height => 300, :type => "image/svg+xml", :src => url_for(:controller => 'graphs', :action => 'bug_growth_graph'), :v => params[:v]) if @project.nil? %>
-    <%= tag("embed", :width => "100%", :height => 300, :type => "image/svg+xml", :src => url_for(:controller => 'graphs', :action => 'bug_growth_graph', :project_id => @project.id, :v => params[:v])) unless @project.nil? %>
+    <%= tag("embed", :width => "100%", :height => 300, :type => "image/svg+xml", :src => url_for(:controller => 'graphs', :action => 'bug_growth_graph', 
+      :v => params[:v], :f => params[:f], :op => params[:op])) if @project.nil? %>
+    <%= tag("embed", :width => "100%", :height => 300, :type => "image/svg+xml", :src => url_for(:controller => 'graphs', :action => 'bug_growth_graph', :project_id => @project.id,
+      :v => params[:v], :f => params[:f] ,:op => params[:op] )) unless @project.nil? %>
 <% else %>
     <%= render :partial => 'issues/list_simple', :locals => { :issues => @issues } %>
 <% end %>
