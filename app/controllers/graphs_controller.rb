@@ -14,7 +14,7 @@ class GraphsController < ApplicationController
     before_filter :find_optional_project, :only => [:issue_growth_graph]
     before_filter :find_open_issues, :only => [:old_issues, :issue_age_graph]
     before_filter :find_bug_issues, :only => [:bug_growth, :bug_growth_graph]
-    before_filter :catch_date_params, :only => [:find_bug_issues]
+    #before_filter :catch_date_params, :only => [:find_bug_issues]
 
     helper :queries
     include QueriesHelper
@@ -372,16 +372,22 @@ class GraphsController < ApplicationController
         @filter = @filter || {}
         unless params[:year].nil?
           @filter['year_from'] = params[:year].to_i
+        else
+          @filter['year_from'] = Date.today.year
         end
         unless params[:month].nil?
           @filter['month_from'] = params[:month].to_i
+        else
+          @filter['month_from'] = Date.today.month
         end
         unless params[:no_of_days].nil?
           @filter['no_of_days'] = params[:no_of_days].to_i
+        else
+          @filter['no_of_days'] = 30
         end
         from_date = Date.new(@filter['year_from'],@filter['month_from'])       
         till_date = from_date  +  @filter['no_of_days'].days
-        @bugs = @query.issues(:conditions => ["#{Issue.table_name}.created_on BETWEEN ? AND ?",from_date,till_date])        
+        @bugs = @query.issues(:conditions => ["#{Issue.table_name}.created_on BETWEEN ? AND ?",from_date.to_s,till_date.to_s])        
     rescue ActiveRecord::RecordNotFound
         render_404
     end
