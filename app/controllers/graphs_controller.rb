@@ -14,6 +14,7 @@ class GraphsController < ApplicationController
     before_filter :find_optional_project, :only => [:issue_growth_graph]
     before_filter :find_open_issues, :only => [:old_issues, :issue_age_graph]
     before_filter :find_bug_issues, :only => [:bug_growth, :bug_growth_graph]
+    before_filter :catch_date_params, :only => [:find_bug_issues]
 
     helper :queries
     include QueriesHelper
@@ -74,10 +75,7 @@ class GraphsController < ApplicationController
         @issues_by_updated_on = @issues.sort {|a,b| a.updated_on<=>b.updated_on}
     end
     # Displays created vs update date on bugs over time    
-    def bug_growth
-        @filter = Hash.new
-        @filter['months'] = 6;
-        @filter['month_from'], @filter['year_from'] = Date.today.month        
+    def bug_growth              
         @bug_by_created = @bugs.group_by {|issue| issue.created_on.to_date }.sort
     end
         
@@ -310,7 +308,14 @@ class GraphsController < ApplicationController
     # Private methods
     ############################################################################
     private
-            
+         
+    
+    def catch_date_params        
+        @filter = Hash.new
+        @filter['no_of_days'] = 30;        
+        @filter['month_from'], @filter['year_from'] = Date.today.month, Date.today.year                 
+    end
+    
     def confirm_issues_exist
         find_optional_project
         if !@project.nil?
@@ -364,7 +369,19 @@ class GraphsController < ApplicationController
 #        else
 #            @bugs= Issue.visible.find(:all)
 #        end
-        @bugs = @query.issues
+        @filter = @filter || {}
+        unless params[:year].nil?
+          @filter['year_from'] = params[:year].to_i
+        end
+        unless params[:month].nil?
+          @filter['month_from'] = params[:month].to_i
+        end
+        unless params[:no_of_days].nil?
+          @filter['no_of_days'] = params[:no_of_days].to_i
+        end
+        from_date = Date.new(@filter['year_from'],@filter['month_from'])       
+        till_date = from_date  +  @filter['no_of_days'].days
+        @bugs = @query.issues(:conditions => ["#{Issue.table_name}.created_on BETWEEN ? AND ?",from_date,till_date])        
     rescue ActiveRecord::RecordNotFound
         render_404
     end
