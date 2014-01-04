@@ -16,9 +16,11 @@ class IssuesSidebarGraphHook < Redmine::Hook::ViewListener
         output << "<br/>"
         output << link_to(l(:label_graphs_issue_growth), {:controller => 'graphs', :action => 'issue_growth', :project_id => context[:project], :host => Setting.host_name})
         output << "<br/>"
-	 output << link_to(l(:label_graphs_bug_growth), {:controller => 'graphs', :action => 'bug_growth', :project_id => context[:project], :host => Setting.host_name})
+	 output << link_to(l(:label_graphs_issue_with_filter), {:controller => 'graphs', :action => 'bug_growth', :project_id => context[:project], :host => Setting.host_name})
         output << "<br/>"
         return output
     end
   end
 end
+
+
